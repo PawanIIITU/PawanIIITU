@@ -1,0 +1,56 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+address='breast-cancer.csv'
+df=pd.read_csv(address)
+df.head(7)
+df.shape
+df.isna().sum()
+df=df.dropna(axis=1)
+df.shape
+df['diagnosis'].value_counts()
+sns.countplot(df['diagnosis'],label='count')
+df.dtypes
+from sklearn.preprocessing import LabelEncoder
+labelencoder_y=LabelEncoder()
+labelencoder_y.fit_transform(df.iloc[:,1].values)
+df.iloc[:,1].values
+sns.pairplot(df.iloc[:,1:5])
+df.head(5)
+plt.figure(figsize=(10,10))
+sns.heatmap(df.iloc[:,1:12].corr(),annot=True)
+X=df.iloc[:,2:31].values
+Y=df.iloc[:,1].values
+from sklearn.model_selection import train_test_split
+X_train,X_test,Y_train,Y_test=train_test_split(X,Y,test_size=0.25,random_state=0)
+from sklearn.preprocessing import StandardScaler
+Sc=StandardScaler()
+X_train=Sc.fit_transform(X_train)
+X_test=Sc.fit_transform(X_test)
+def models(X_train,Y_train):
+    from sklearn.linear_model import LogisticRegression
+    log=LogisticRegression(random_state=0)
+    log.fit(X_train,Y_train)
+    from sklearn.tree import DecisionTreeClassifier
+    tree=DecisionTreeClassifier(random_state=0)
+    tree.fit(X_train,Y_train)
+    from sklearn.ensemble import RandomForestClassifier
+    forest=RandomForestClassifier(n_estimators=10,random_state=0)
+    forest.fit(X_train,Y_train)
+    print('[0]Logistic Regression Training Accuracy:',log.score(X_train,Y_train))
+    print('[1]Decision Tree Classifier Training Accuracy:',tree.score(X_train,Y_train))
+    print('[2]Random Forest Classifier Training Accuracy:',forest.score(X_train,Y_train))
+    return log, tree, forest
+model=models(X_train,Y_train)
+from sklearn.metrics import confusion_matrix
+for i in range(len(model)):
+ cm=confusion_matrix(Y_test,model[i].predict(X_test))
+ TP=cm[0][0]
+ TN=cm[1][1]
+ FN=cm[1][0]
+ FP=cm[0][1]
+ print(cm)
+ print('Testing Accuracy',(TP+TN)/(TP+TN+FN+FP))
+ print()
+
